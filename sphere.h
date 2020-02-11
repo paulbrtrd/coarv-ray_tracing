@@ -1,14 +1,16 @@
 #pragma once
 
 #include "hitable.h"
+#include "material.h"
 
 class Sphere: public Hitable {
 public:
     Sphere() {}
-    Sphere(Vec3 cen, float r) : center(cen), radius(r) {};
+    Sphere(Vec3 cen, float r, Material * m) : center(cen), radius(r), mat_ptr(m) {};
     virtual bool hit(const Ray & r, float t_min, float t_max, hit_record & rec) const;
     Vec3 center;
     float radius;
+    Material * mat_ptr;
 };
 
 bool Sphere::hit(const Ray & r, float t_min, float t_max, hit_record & rec) const {
@@ -24,6 +26,7 @@ bool Sphere::hit(const Ray & r, float t_min, float t_max, hit_record & rec) cons
             rec.t = temp;
             rec.p = r.point_at_parameter(rec.t);
             rec.normal = (rec.p - center) / radius;
+            rec.mat_ptr = mat_ptr;
             return true;
         }
         temp = (-b + sqrt(b*b-a*c))/a;
@@ -31,6 +34,7 @@ bool Sphere::hit(const Ray & r, float t_min, float t_max, hit_record & rec) cons
             rec.t = temp;
             rec.p = r.point_at_parameter(rec.t);
             rec.normal = (rec.p - center) / radius;
+            rec.mat_ptr = mat_ptr;
             return true;
         }
     }

@@ -3,15 +3,18 @@
 #include "sphere.h"
 #include "hitableList.h"
 #include "camera.h"
+#include "material.h"
 
 #include <float.h>
 #define DEBUG 0
 
-Vec3 color(const Ray & r, Hitable * world) {
+Vec3 color(const Ray & r, Hitable * world, int depth) {
     hit_record rec;
     if( world->hit(r, 0.001, MAXFLOAT, rec) ) {
-        Vec3 target = rec.p + rec.normal + random_in_unit_sphere();
-        return 0.5*color( Ray(rec.p, target - rec.p), world);
+        Vec3 attenuation;
+        Ray scattered;
+        if (depth < 50 && rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+        return attenuation*color( scattered, world, depth+1);
     }
     else {
         Vec3 unit_direction = unit_vector(r.direction());
@@ -34,10 +37,12 @@ int main () {
     Vec3 vertical(0.0, 2.0, 0.0);
     Vec3 origin(0.0, 0.0, 0.0);
 
-    Hitable * list[2];
-    list[0] = new Sphere(Vec3(0,0,-1), 0.5);
-    list[1] = new Sphere(Vec3(-0, -100.5, -1), 100);
-    Hitable * world = new Hitable_list(list, 2);
+    Hitable * list[4];
+    list[0] = new Sphere(Vec3(0,0,-1), 0.5, new Lambertian(Vec3(0.8, 0.3, 0.3)));
+    list[1] = new Sphere(Vec3(-0, -100.5, -1), 100, new Lambertian(Vec3(0.8, 0.8, 0.0)));
+    list[2] = new Sphere(Vec3(1, 0, -1), 0.5, new Metal(Vec3(0.8, 0.6, 0.2), 1.0));
+    list[3] = new Sphere(Vec3(-1, 0, -1), 0.5, new Metal(Vec3(0.8, 0.8, 0.8), 0.3));
+    Hitable * world = new Hitable_list(list, 4);
     Camera cam;
     for(int j=ny-1; j>=0; j--) {
         for (int i=0; i<nx; i++) {
@@ -47,7 +52,7 @@ int main () {
                 float v = float(j + drand48()) / float(ny);
                 Ray r = cam.get_ray(u,v);
                 Vec3 p = r.point_at_parameter(2.0);
-                col+=color(r, world);
+                col+=color(r, world, 0);
             }
             col/=float(ns);
             col = Vec3(sqrt(col.r()), sqrt(col.g()), sqrt(col.b()));
@@ -56,8 +61,8 @@ int main () {
             int ib = int(255.99*col.b());
             new_file << ir <<" "<< ig <<" "<< ib << "\n";
             if(DEBUG) {
-                if (ir <0 || ig < 0 || ib < 0)
-                    std::cout << ir <<" "<< ig <<" "<< ib << "\n";
+                
+                std::cout << ir <<" "<< ig <<" "<< ib << "\n";
             }
         }
     }
