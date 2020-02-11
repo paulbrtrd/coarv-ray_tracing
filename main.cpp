@@ -9,9 +9,9 @@
 
 Vec3 color(const Ray & r, Hitable * world) {
     hit_record rec;
-    if( world->hit(r, 0.0, MAXFLOAT, rec) ) {
-        Vec3 N = rec.normal;
-        return 0.5*Vec3(N.x() + 1, N.y() + 1, N.z() + 1);
+    if( world->hit(r, 0.001, MAXFLOAT, rec) ) {
+        Vec3 target = rec.p + rec.normal + random_in_unit_sphere();
+        return 0.5*color( Ray(rec.p, target - rec.p), world);
     }
     else {
         Vec3 unit_direction = unit_vector(r.direction());
@@ -50,6 +50,7 @@ int main () {
                 col+=color(r, world);
             }
             col/=float(ns);
+            col = Vec3(sqrt(col.r()), sqrt(col.g()), sqrt(col.b()));
             int ir = int(255.99*col.r());
             int ig = int(255.99*col.g());
             int ib = int(255.99*col.b());

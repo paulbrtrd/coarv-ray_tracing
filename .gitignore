@@ -41,3 +41,4 @@ build/
 
 # VS code
 .vscode/ 
+ray_tracing
