@@ -14,12 +14,21 @@ Vec3 color(const Ray & r, Hitable * world, int depth) {
         Vec3 attenuation;
         Ray scattered;
         if (depth < 50 && rec.mat_ptr->scatter(r, rec, attenuation, scattered))
-        return attenuation*color( scattered, world, depth+1);
+        {
+            return attenuation*color( scattered, world, depth+1);
+        }
+        else {
+            return Vec3(0,0,0);
+        }
+        
     }
     else {
         Vec3 unit_direction = unit_vector(r.direction());
         float t = 0.5*(unit_direction.y() + 1.0);
         Vec3 result = (1.0 - t)*Vec3(1.0, 1.0, 1.0) + t*Vec3(0.5, 0.7, 1.0);
+        if(result.x() < 0 || result.y() < 0 || result.z() < 0) {
+            std::cout << "Erreur: élément négatif, sans collision" << std::endl;
+        }
         return result;
     }
 }
@@ -41,7 +50,7 @@ int main () {
     list[0] = new Sphere(Vec3(0,0,-1), 0.5, new Lambertian(Vec3(0.8, 0.3, 0.3)));
     list[1] = new Sphere(Vec3(-0, -100.5, -1), 100, new Lambertian(Vec3(0.8, 0.8, 0.0)));
     list[2] = new Sphere(Vec3(1, 0, -1), 0.5, new Metal(Vec3(0.8, 0.6, 0.2), 1.0));
-    list[3] = new Sphere(Vec3(-1, 0, -1), 0.5, new Metal(Vec3(0.8, 0.8, 0.8), 0.3));
+    list[3] = new Sphere(Vec3(-1,0,-1), 0.5, new Dielectric(1.5));
     Hitable * world = new Hitable_list(list, 4);
     Camera cam;
     for(int j=ny-1; j>=0; j--) {
