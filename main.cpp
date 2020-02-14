@@ -8,6 +8,7 @@
 #include <float.h>
 #define DEBUG 0
 
+
 Vec3 color(const Ray & r, Hitable * world, int depth) {
     hit_record rec;
     if( world->hit(r, 0.001, MAXFLOAT, rec) ) {
@@ -50,13 +51,16 @@ int main () {
     float R = cos(M_PI/4);
     list[0] = new Sphere(Vec3(0,0,-1), 0.5, new Lambertian(Vec3(0.8, 0.3, 0.3)));
     list[1] = new Sphere(Vec3(-0, -100.5, -1), 100, new Lambertian(Vec3(0.8, 0.8, 0.0)));
-
     // list[0] = new Sphere(Vec3(-R,0,-1), R, new Lambertian(Vec3(0, 0, 1)));
     // list[1] = new Sphere(Vec3(R, 0, -1), R, new Lambertian(Vec3(1, 0, 0)));
     list[2] = new Sphere(Vec3(1, 0, -1), 0.5, new Metal(Vec3(0.8, 0.6, 0.2), 1.0));
     list[3] = new Sphere(Vec3(-1,0,-1), 0.5, new Dielectric(1.5));
     Hitable * world = new Hitable_list(list, 4);
-    Camera cam(Vec3(-2,2,1), Vec3(0,0,-1), Vec3(0,1,0),30, float(nx)/float(ny));
+    Vec3 lookfrom(3,3,2);
+    Vec3 lookat(0,0,-1);
+    float dist_to_focus = (lookfrom-lookat).length();
+    float aperture = 2.0;
+    Camera cam(lookfrom, lookat, Vec3(0,1,0),20, float(nx)/float(ny), aperture, dist_to_focus);
     for(int j=ny-1; j>=0; j--) {
         for (int i=0; i<nx; i++) {
             Vec3 col(0,0,0);
